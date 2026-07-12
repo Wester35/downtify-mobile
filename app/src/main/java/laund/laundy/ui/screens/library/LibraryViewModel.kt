@@ -1,4 +1,4 @@
-package laund.laundy.ui.viewmodels
+package laund.laundy.ui.screens.library
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf

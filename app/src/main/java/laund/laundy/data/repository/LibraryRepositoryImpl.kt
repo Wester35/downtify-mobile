@@ -1,5 +1,6 @@
 package laund.laundy.data.repository
 
+import android.net.Uri
 import laund.laundy.data.remote.DowntifyApi
 import laund.laundy.domain.AppConstants
 import laund.laundy.domain.model.LibrarySong
@@ -12,12 +13,13 @@ class LibraryRepositoryImpl @Inject constructor(
 ) : LibraryRepository {
     override suspend fun getLibrary(): List<LibrarySong> {
         return api.getLibrary().map { path ->
-
             val name = path.substringAfterLast('/').removeSuffix(".mp3")
             val parts = name.split(" - ", limit = 2)
 
             LibrarySong(
                 path = path,
+                streamUrl =
+                    "${AppConstants.API_URL}downloads/${Uri.encode(path)}",
                 artist = parts.getOrElse(0) { "Unknown" },
                 title = parts.getOrElse(1) { name },
                 coverUrl = "${AppConstants.API_URL}cover?file=${URLEncoder.encode(path, "UTF-8")}"
