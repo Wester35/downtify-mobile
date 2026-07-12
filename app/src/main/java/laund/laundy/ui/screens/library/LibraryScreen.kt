@@ -1,14 +1,11 @@
 package laund.laundy.ui.screens.library
 
-import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
-import laund.laundy.ui.components.LibraryViewModel
+import laund.laundy.ui.components.SongCard
+import laund.laundy.ui.viewmodels.LibraryViewModel
 
 @Composable
 fun LibraryScreen(
@@ -16,9 +13,8 @@ fun LibraryScreen(
 ) {
     LazyColumn {
         items(viewModel.songs) { song ->
-            Text(
-                text = song.path,
-                modifier = Modifier.padding(16.dp)
+            SongCard(
+                song = song
             )
         }
     }

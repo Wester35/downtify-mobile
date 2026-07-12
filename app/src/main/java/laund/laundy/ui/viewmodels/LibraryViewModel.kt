@@ -1,4 +1,4 @@
-package laund.laundy.ui.components
+package laund.laundy.ui.viewmodels
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -10,7 +10,6 @@ import kotlinx.coroutines.launch
 import laund.laundy.domain.model.LibrarySong
 import laund.laundy.domain.repository.LibraryRepository
 import javax.inject.Inject
-import kotlin.collections.emptyList
 
 @HiltViewModel
 class LibraryViewModel @Inject constructor(

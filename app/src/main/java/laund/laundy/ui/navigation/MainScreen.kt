@@ -12,7 +12,7 @@ import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import laund.laundy.ui.components.LibraryViewModel
+import laund.laundy.ui.viewmodels.LibraryViewModel
 import laund.laundy.ui.screens.library.LibraryScreen
 
 @Composable
