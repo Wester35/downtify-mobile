@@ -2,7 +2,6 @@ package laund.laundy.domain.service
 
 import android.content.Context
 import android.content.Intent
-import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
@@ -18,42 +17,88 @@ class ExoPlayerService @Inject constructor(
     private val player: ExoPlayer,
     @param:ApplicationContext private val context: Context
 ) : PlayerService {
+    override fun play(
+        url: String,
+        song: LibrarySong?
+    ) {
 
-    override fun play(url: String, song: LibrarySong?) {
-        Log.d("ExoPlayerService", "play called with song: ${song?.title} - ${song?.artist}")
+        val metadata =
+            MediaMetadata.Builder()
+                .setTitle(song?.title ?: "Unknown")
+                .setArtist(song?.artist ?: "Unknown")
+                .setArtworkUri(
+                    song?.coverUrl?.toUri()
+                )
+                .setMediaType(
+                    MediaMetadata.MEDIA_TYPE_MUSIC
+                )
+                .build()
 
-        // Запускаем сервис
-        val intent = Intent(context, MediaPlaybackService::class.java)
-        ContextCompat.startForegroundService(context, intent)
 
-        val metadata = MediaMetadata.Builder().apply {
-            if (song != null) {
-                setTitle(song.title)
-                setArtist(song.artist)
-                song.coverUrl?.let { coverUrl ->
-                    try {
-                        setArtworkUri(coverUrl.toUri())
-                    } catch (e: Exception) {
-                        Log.e("ExoPlayerService", "Invalid cover URL", e)
-                    }
-                }
-            } else {
-                setTitle("Unknown Title")
-                setArtist("Unknown Artist")
-            }
-            setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
-            setIsPlayable(true)
-        }.build()
+        val mediaItem =
+            MediaItem.Builder()
+                .setUri(url)
+                .setMediaMetadata(metadata)
+                .build()
 
-        val mediaItem = MediaItem.Builder()
-            .setUri(url)
-            .setMediaMetadata(metadata)
-            .build()
 
-        player.setMediaItem(mediaItem)
+        player.setMediaItem(
+            mediaItem
+        )
+
         player.prepare()
+
+
+        val intent =
+            Intent(
+                context,
+                MediaPlaybackService::class.java
+            )
+
+
+        ContextCompat.startForegroundService(
+            context,
+            intent
+        )
+
+
         player.play()
     }
+//    override fun play(url: String, song: LibrarySong?) {
+//        Log.d("ExoPlayerService", "play called with song: ${song?.title} - ${song?.artist}")
+//
+//        // Запускаем сервис
+//        val intent = Intent(context, MediaPlaybackService::class.java)
+//        ContextCompat.startForegroundService(context, intent)
+//
+//        val metadata = MediaMetadata.Builder().apply {
+//            if (song != null) {
+//                setTitle(song.title)
+//                setArtist(song.artist)
+//                song.coverUrl?.let { coverUrl ->
+//                    try {
+//                        setArtworkUri(coverUrl.toUri())
+//                    } catch (e: Exception) {
+//                        Log.e("ExoPlayerService", "Invalid cover URL", e)
+//                    }
+//                }
+//            } else {
+//                setTitle("Unknown Title")
+//                setArtist("Unknown Artist")
+//            }
+//            setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+//            setIsPlayable(true)
+//        }.build()
+//
+//        val mediaItem = MediaItem.Builder()
+//            .setUri(url)
+//            .setMediaMetadata(metadata)
+//            .build()
+//
+//        player.setMediaItem(mediaItem)
+//        player.prepare()
+//        player.play()
+//    }
 
     override fun pause() {
         player.pause()
