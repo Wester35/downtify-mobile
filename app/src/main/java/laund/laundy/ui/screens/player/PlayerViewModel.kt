@@ -12,7 +12,8 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val player: PlayerService
-) : ViewModel() {
+) : ViewModel()
+{
     var currentSong by mutableStateOf<LibrarySong?>(null)
         private set
 

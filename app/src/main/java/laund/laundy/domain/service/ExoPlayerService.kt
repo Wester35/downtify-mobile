@@ -1,22 +1,26 @@
 package laund.laundy.domain.service
 
-import android.content.Context
 import androidx.media3.common.MediaItem
+import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
-import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class ExoPlayerService @Inject constructor(
-    @ApplicationContext context: Context
+    private val player: ExoPlayer
 ) : PlayerService {
-    private val player =
-        ExoPlayer.Builder(context)
-            .build()
-
     override fun play(url: String) {
-        val item = MediaItem.fromUri(url)
+        val item =
+            MediaItem.Builder()
+                .setUri(url)
+                .setMediaMetadata(
+                    MediaMetadata.Builder()
+                        .setTitle("Название")
+                        .setArtist("Исполнитель")
+                        .build()
+                )
+                .build()
 
         player.setMediaItem(item)
 
