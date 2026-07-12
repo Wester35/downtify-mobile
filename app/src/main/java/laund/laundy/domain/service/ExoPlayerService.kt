@@ -1,31 +1,57 @@
 package laund.laundy.domain.service
 
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import androidx.core.content.ContextCompat
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MediaMetadata
 import androidx.media3.exoplayer.ExoPlayer
+import dagger.hilt.android.qualifiers.ApplicationContext
+import laund.laundy.domain.model.LibrarySong
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.net.toUri
 
 @Singleton
 class ExoPlayerService @Inject constructor(
-    private val player: ExoPlayer
+    private val player: ExoPlayer,
+    @param:ApplicationContext private val context: Context
 ) : PlayerService {
-    override fun play(url: String) {
-        val item =
-            MediaItem.Builder()
-                .setUri(url)
-                .setMediaMetadata(
-                    MediaMetadata.Builder()
-                        .setTitle("Название")
-                        .setArtist("Исполнитель")
-                        .build()
-                )
-                .build()
 
-        player.setMediaItem(item)
+    override fun play(url: String, song: LibrarySong?) {
+        Log.d("ExoPlayerService", "play called with song: ${song?.title} - ${song?.artist}")
 
+        // Запускаем сервис
+        val intent = Intent(context, MediaPlaybackService::class.java)
+        ContextCompat.startForegroundService(context, intent)
+
+        val metadata = MediaMetadata.Builder().apply {
+            if (song != null) {
+                setTitle(song.title)
+                setArtist(song.artist)
+                song.coverUrl?.let { coverUrl ->
+                    try {
+                        setArtworkUri(coverUrl.toUri())
+                    } catch (e: Exception) {
+                        Log.e("ExoPlayerService", "Invalid cover URL", e)
+                    }
+                }
+            } else {
+                setTitle("Unknown Title")
+                setArtist("Unknown Artist")
+            }
+            setMediaType(MediaMetadata.MEDIA_TYPE_MUSIC)
+            setIsPlayable(true)
+        }.build()
+
+        val mediaItem = MediaItem.Builder()
+            .setUri(url)
+            .setMediaMetadata(metadata)
+            .build()
+
+        player.setMediaItem(mediaItem)
         player.prepare()
-
         player.play()
     }
 

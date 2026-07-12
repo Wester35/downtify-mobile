@@ -30,7 +30,7 @@ fun MiniPlayer(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp),
+            .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ){
         AsyncImage(
@@ -40,7 +40,7 @@ fun MiniPlayer(
         )
 
         Column(
-            modifier = Modifier.weight(1f)
+            modifier = Modifier.weight(1f).padding(horizontal = 8.dp)
         ){
             Text(song.title)
             Text(song.artist)

@@ -12,33 +12,26 @@ import javax.inject.Inject
 @HiltViewModel
 class PlayerViewModel @Inject constructor(
     private val player: PlayerService
-) : ViewModel()
-{
+) : ViewModel() {
     var currentSong by mutableStateOf<LibrarySong?>(null)
         private set
 
     var isPlaying by mutableStateOf(false)
         private set
 
-    fun play(song: LibrarySong){
+    fun play(song: LibrarySong) {
         currentSong = song
-
-        player.play(
-            song.streamUrl
-        )
-
+        player.play(song.streamUrl, song)
         isPlaying = true
     }
 
-    fun pause(){
+    fun pause() {
         player.pause()
-
         isPlaying = false
     }
 
-    fun resume(){
+    fun resume() {
         player.resume()
-
         isPlaying = true
     }
 
