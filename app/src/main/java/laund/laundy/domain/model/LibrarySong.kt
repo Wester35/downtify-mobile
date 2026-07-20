@@ -5,5 +5,6 @@ data class LibrarySong(
     val title: String,
     val streamUrl: String,
     val artist: String,
-    val coverUrl: String? = null
+    val coverUrl: String? = null,
+    val isDownloaded: Boolean = false
 )

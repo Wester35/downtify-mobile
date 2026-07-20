@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
 import laund.laundy.ui.components.MiniPlayer
 import laund.laundy.ui.components.SongCard
@@ -14,6 +15,10 @@ fun LibraryScreen(
     libraryViewModel: LibraryViewModel = hiltViewModel(),
     playerViewModel: PlayerViewModel = hiltViewModel()
 ) {
+    LaunchedEffect(libraryViewModel.songs) {
+        playerViewModel.refreshDownloadedStatus(libraryViewModel.songs)
+    }
+
     Column {
         MiniPlayer(
             song = playerViewModel.currentSong,
@@ -29,6 +34,15 @@ fun LibraryScreen(
                     song = song,
                     onClick = {
                         playerViewModel.play(song)
+                    },
+                    isDownloaded = playerViewModel.isSongDownloaded(song),
+                    isDownloading = playerViewModel.isSongDownloading(song),
+                    onDownloadClick = {
+                        if (playerViewModel.isSongDownloaded(song)) {
+                            playerViewModel.deleteSong(song)
+                        } else {
+                            playerViewModel.downloadSong(song)
+                        }
                     }
                 )
             }
