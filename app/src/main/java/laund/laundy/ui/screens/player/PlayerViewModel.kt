@@ -1,5 +1,6 @@
 package laund.laundy.ui.screens.player
 
+import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -25,11 +26,15 @@ class PlayerViewModel @Inject constructor(
     var isPlaying by mutableStateOf(false)
         private set
 
-    var downloadingSongs by mutableStateOf<Set<String>>(emptySet())
+    var downloadingSongs by mutableStateOf(emptySet<String>())
         private set
 
-    var downloadedSongs by mutableStateOf<Set<String>>(emptySet())
-        private set
+    // Кэш статуса скачивания: path -> true/false
+    private var downloadStatusCache by mutableStateOf(mapOf<String, Boolean>())
+
+    init {
+        refreshAllDownloadStatus()
+    }
 
     fun play(song: LibrarySong) {
         currentSong = song
@@ -55,16 +60,42 @@ class PlayerViewModel @Inject constructor(
         }
     }
 
-    fun isSongDownloaded(song: LibrarySong): Boolean {
-        return downloadManager.isDownloaded(song)
-    }
-
     fun isSongDownloading(song: LibrarySong): Boolean {
         return downloadingSongs.contains(song.path)
     }
 
+    fun isSongDownloaded(song: LibrarySong): Boolean {
+        // Сначала проверяем кэш
+        val cached = downloadStatusCache[song.path]
+        if (cached != null) {
+            return cached
+        }
+
+        // Если нет в кэше, проверяем напрямую
+        val isDownloaded = downloadManager.isDownloaded(song)
+        downloadStatusCache = downloadStatusCache + (song.path to isDownloaded)
+
+        Log.d("PlayerViewModel", "🎵 ${song.title}: ${if (isDownloaded) "✅ СКАЧАНА" else "❌ НЕ скачана"}")
+        return isDownloaded
+    }
+
+    fun refreshAllDownloadStatus() {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                val files = downloadManager.getDownloadedSongs()
+                Log.d("PlayerViewModel", "📁 Файлы в Downloads: $files")
+            }
+            // Сбрасываем кэш, чтобы он обновился при следующей проверке
+            downloadStatusCache = emptyMap()
+            Log.d("PlayerViewModel", "🔄 Кэш статуса скачивания сброшен")
+        }
+    }
+
     fun downloadSong(song: LibrarySong) {
-        if (downloadingSongs.contains(song.path)) return
+        if (downloadingSongs.contains(song.path)) {
+            Log.d("PlayerViewModel", "⏳ Песня уже скачивается: ${song.title}")
+            return
+        }
 
         downloadingSongs = downloadingSongs + song.path
 
@@ -75,8 +106,15 @@ class PlayerViewModel @Inject constructor(
                 }
 
                 result.onSuccess {
-                    downloadedSongs = downloadedSongs + song.path
-                }.onFailure { error ->
+                    Log.d("PlayerViewModel", "✅ Скачано успешно: ${song.title}")
+                    // Обновляем кэш
+                    downloadStatusCache = downloadStatusCache + (song.path to true)
+                    // Обновляем весь список для синхронизации
+                    refreshAllDownloadStatus()
+                }
+
+                result.onFailure { error ->
+                    Log.e("PlayerViewModel", "❌ Ошибка скачивания ${song.title}: ${error.message}")
                 }
             } finally {
                 downloadingSongs = downloadingSongs - song.path
@@ -86,19 +124,18 @@ class PlayerViewModel @Inject constructor(
 
     fun deleteSong(song: LibrarySong) {
         viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                if (downloadManager.deleteSong(song)) {
-                    downloadedSongs = downloadedSongs - song.path
-                }
+            val deleted = withContext(Dispatchers.IO) {
+                downloadManager.deleteSong(song)
             }
-        }
-    }
 
-    fun refreshDownloadedStatus(songs: List<LibrarySong>) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                val downloaded = songs.filter { downloadManager.isDownloaded(it) }
-                downloadedSongs = downloaded.map { it.path }.toSet()
+            if (deleted) {
+                // Обновляем кэш
+                downloadStatusCache = downloadStatusCache + (song.path to false)
+                Log.d("PlayerViewModel", "🗑️ Удалено: ${song.title}")
+                // Обновляем весь список
+                refreshAllDownloadStatus()
+            } else {
+                Log.d("PlayerViewModel", "❌ Не удалось удалить: ${song.title}")
             }
         }
     }

@@ -33,18 +33,15 @@ import laund.laundy.domain.model.LibrarySong
 fun SongCard(
     song: LibrarySong,
     onClick: () -> Unit,
-    modifier: Modifier = Modifier,
-    isDownloaded: Boolean = false,
-    isDownloading: Boolean = false,
-    onDownloadClick: () -> Unit = {}
+    isDownloaded: Boolean,
+    isDownloading: Boolean,
+    onDownloadClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .padding(
-                horizontal = 16.dp,
-                vertical = 8.dp
-            )
+            .padding(horizontal = 16.dp, vertical = 8.dp)
             .clickable { onClick() },
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -53,9 +50,7 @@ fun SongCard(
             contentDescription = null,
             modifier = Modifier
                 .size(64.dp)
-                .clip(
-                    RoundedCornerShape(8.dp)
-                ),
+                .clip(RoundedCornerShape(8.dp)),
             contentScale = ContentScale.Crop
         )
 
@@ -77,7 +72,8 @@ fun SongCard(
                 text = song.artist,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis
             )
         }
 
@@ -85,26 +81,30 @@ fun SongCard(
             onClick = onDownloadClick,
             enabled = !isDownloading
         ) {
-            if (isDownloading) {
-                CircularProgressIndicator(
-                    modifier = Modifier.size(24.dp),
-                    strokeWidth = 2.dp,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            } else if (isDownloaded) {
-                Icon(
-                    imageVector = Icons.Default.DownloadDone,
-                    contentDescription = "Downloaded",
-                    tint = Color(0xFF4CAF50)
-                )
-            } else {
-                Icon(
-                    imageVector = Icons.Default.Download,
-                    contentDescription = "Download"
-                )
+            when {
+                isDownloading -> {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(24.dp),
+                        strokeWidth = 2.dp
+                    )
+                }
+
+                isDownloaded -> {
+                    Icon(
+                        imageVector = Icons.Default.DownloadDone,
+                        contentDescription = "Delete",
+                        tint = Color(0xFF4CAF50)
+                    )
+                }
+
+                else -> {
+                    Icon(
+                        imageVector = Icons.Default.Download,
+                        contentDescription = "Download"
+                    )
+                }
             }
         }
-
 
         IconButton(
             onClick = {}
